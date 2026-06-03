@@ -78,7 +78,13 @@ class VolumeNormalizationAudioProcessor : AudioProcessor {
         if (inputSize == 0) return
 
         val sampleCount = inputSize / bytesPerSample
-        val out = replaceOutputBuffer(sampleCount * bytesPerSample)
+        val requiredSize = sampleCount * bytesPerSample
+        var out = replaceOutputBuffer(requiredSize)
+        if (out.remaining() < requiredSize) {
+            Timber.tag(TAG).w("Buffer too small: %d < %d, reallocating", out.remaining(), requiredSize)
+            outputBuffer = ByteBuffer.allocateDirect(requiredSize).order(ByteOrder.nativeOrder())
+            out = outputBuffer
+        }
 
         inputBuffer.order(ByteOrder.LITTLE_ENDIAN)
         out.order(ByteOrder.LITTLE_ENDIAN)
@@ -182,7 +188,7 @@ class VolumeNormalizationAudioProcessor : AudioProcessor {
     }
 
     private fun replaceOutputBuffer(size: Int): ByteBuffer {
-        if (outputBuffer.capacity() < size) {
+        if (outputBuffer === EMPTY_BUFFER || outputBuffer.capacity() < size) {
             outputBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
         } else {
             outputBuffer.clear()
