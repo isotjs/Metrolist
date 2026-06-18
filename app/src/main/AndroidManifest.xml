@@ -237,6 +237,11 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <!-- Receiver for Listen Together notification actions (Approve/Reject) -->
         <receiver
             android:name=".listentogether.ListenTogetherActionReceiver"
